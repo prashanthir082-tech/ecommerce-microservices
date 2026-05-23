@@ -29,11 +29,11 @@ public class UserService {
         User user = modelMapper.map(userRequest, User.class);
         userRepository.save(user);
     }
-    public Optional<UserResponse> fetchUser(int id){
+    public Optional<UserResponse> fetchUser(String id){
         return userRepository.findById(id)
                 .map(user -> modelMapper.map(user, UserResponse.class));
     }
-    public boolean updateUser(int id,UserRequest userRequest){
+    public boolean updateUser(String id,UserRequest userRequest){
         return userRepository.findById(id)
                 .map(existingUser -> {
                     modelMapper.map(userRequest, existingUser);
