@@ -1,4 +1,4 @@
-package com.example.order.controller;
+package com.ecommerce.product.controller;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;

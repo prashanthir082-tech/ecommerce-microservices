@@ -7,6 +7,7 @@
         <option value="$PROJECT_DIR$/ecommerce-microservices/user/pom.xml" />
         <option value="$PROJECT_DIR$/ecommerce-microservices/order/pom.xml" />
         <option value="$PROJECT_DIR$/ecommerce-microservices/product/pom.xml" />
+        <option value="$PROJECT_DIR$/ecommerce-microservices/ecomm-configserver/pom.xml" />
       </list>
     </option>
   </component>
