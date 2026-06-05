@@ -53,7 +53,7 @@ public class ProductService {
     }
 
     public Optional<ProductResponse> getProduct(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findByIdAndActiveTrue(id)
                 .map(product -> modelMapper.map(product, ProductResponse.class));
     }
 

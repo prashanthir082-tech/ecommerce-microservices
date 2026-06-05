@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -42,8 +41,10 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<ProductResponse>> getProduct(@PathVariable Long id){
-        return ResponseEntity.ok(productService.getProduct(id));
+    public ResponseEntity<ProductResponse> getProduct(@PathVariable Long id){
+        return productService.getProduct(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/search")
