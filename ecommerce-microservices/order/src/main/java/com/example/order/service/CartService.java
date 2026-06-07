@@ -1,19 +1,21 @@
 package com.example.order.service;
 
 
+import com.ecommerce.product.dto.ProductResponse;
+import com.ecommerce.user.dto.UserResponse;
 import com.example.order.clients.ProductServiceClient;
+import com.example.order.clients.UserServiceClient;
 import com.example.order.dto.CartItemRequest;
-import com.example.order.dto.ProductResponse;
 import com.example.order.model.CartItem;
 import com.example.order.repository.CartItemRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +26,7 @@ public class CartService {
 //    private final UserRepository userRepository;
     private final CartItemRepository cartItemRepository;
     private final ProductServiceClient productServiceClient;
+    private final UserServiceClient userServiceClient;
 
     public boolean addToCart(String userId, CartItemRequest request) {
 //        Optional<Product> productOpt = productRepository.findById(request.getProductId());
@@ -41,11 +44,13 @@ public class CartService {
 //        User user = userOpt.get();
 
        ProductResponse productResponse = productServiceClient.getProductDetails(request.getProductId());
-        if(productResponse == null)
+        if(productResponse == null || productResponse.getStockQuantity() < request.getQuantity())
             return false;
 
-        if(productResponse.getStockQuantity() < request.getQuantity())
+        UserResponse userResponse = userServiceClient.getUserDetails(userId);
+        if(userResponse == null){
             return false;
+        }
 
         CartItem existingCartitem = cartItemRepository.findByUserIdAndProductId(Long.valueOf(userId), Long.valueOf(request.getProductId()));
         if(existingCartitem != null){

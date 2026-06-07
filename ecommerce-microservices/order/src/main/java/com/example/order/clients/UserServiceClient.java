@@ -1,13 +1,13 @@
 package com.example.order.clients;
 
-import com.ecommerce.product.dto.ProductResponse;
+import com.ecommerce.user.dto.UserResponse;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;
 
 @HttpExchange
-public interface ProductServiceClient {
+public interface UserServiceClient {
 
-    @GetExchange("/api/products/{id}")
-    ProductResponse getProductDetails(@PathVariable String id) ;
+    @GetExchange("/api/users/{id}")
+    UserResponse getUserDetails(@PathVariable String id);
 }
