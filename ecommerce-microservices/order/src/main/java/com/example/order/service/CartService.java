@@ -8,6 +8,8 @@ import com.example.order.clients.UserServiceClient;
 import com.example.order.dto.CartItemRequest;
 import com.example.order.model.CartItem;
 import com.example.order.repository.CartItemRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ public class CartService {
     private final ProductServiceClient productServiceClient;
     private final UserServiceClient userServiceClient;
 
+    //@CircuitBreaker(name="productService",fallbackMethod = "addToCartFallBack")
+    @Retry(name="retryBreaker",fallbackMethod = "addToCartFallBack")
     public boolean addToCart(String userId, CartItemRequest request) {
 //        Optional<Product> productOpt = productRepository.findById(request.getProductId());
 //        if(productOpt.isEmpty())
@@ -52,7 +56,7 @@ public class CartService {
             return false;
         }
 
-        CartItem existingCartitem = cartItemRepository.findByUserIdAndProductId(Long.valueOf(userId), Long.valueOf(request.getProductId()));
+        CartItem existingCartitem = cartItemRepository.findByUserIdAndProductId(userId, Long.valueOf(request.getProductId()));
         if(existingCartitem != null){
             //update the quantity and price
             existingCartitem.setQuantity(existingCartitem.getQuantity() + request.getQuantity());
@@ -61,7 +65,7 @@ public class CartService {
         }else{
             // create a new cart item
             CartItem cartItem = new CartItem();
-            cartItem.setUserId(Long.valueOf(userId));
+            cartItem.setUserId(userId);
             cartItem.setProductId(Long.valueOf(request.getProductId()));
             cartItem.setQuantity(request.getQuantity());
             cartItem.setPrice(BigDecimal.valueOf(1000.00));
@@ -70,11 +74,16 @@ public class CartService {
     return true;
     }
 
+    public boolean addToCartFallBack(String userId, CartItemRequest request,Exception exception) {
+        System.out.println("Fallback called");
+        return false;
+    }
+
 
     public boolean deleteItemFromCart(String userId, String productId) {
 //        Optional<Product> productOpt = productRepository.findById(Long.valueOf(productId));
 //        Optional<User> userOpt = userRepository.findById(Integer.valueOf(userId));
-        CartItem cartItem = cartItemRepository.findByUserIdAndProductId(Long.valueOf(userId), Long.valueOf(productId));
+        CartItem cartItem = cartItemRepository.findByUserIdAndProductId(userId, Long.valueOf(productId));
         if(cartItem != null){
             cartItemRepository.delete(cartItem);
             return true;
@@ -83,12 +92,12 @@ public class CartService {
     }
 
     public List<CartItem> getCart(String userId) {
-        return cartItemRepository.findByUserId(Long.valueOf(userId));
+        return cartItemRepository.findByUserId(userId);
 
     }
 
     public void clearCart(String userId) {
-        cartItemRepository.deleteByUserId(Long.valueOf(userId));
+        cartItemRepository.deleteByUserId(userId);
 
     }
 }

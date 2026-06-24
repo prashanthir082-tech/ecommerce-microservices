@@ -10,12 +10,14 @@ import com.example.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -24,6 +26,8 @@ public class OrderService {
 
     private final CartService cartService;
     private final OrderRepository orderRepository;
+    private final RabbitTemplate rabbitTemplate;
+
     @Autowired
     private ModelMapper modelMapper;
 
@@ -48,7 +52,7 @@ public class OrderService {
 
         //create order
         Order order = new Order();
-        order.setUserId(Long.valueOf(userId));
+        order.setUserId(userId);
         order.setStatus(OrderStatus.CONFIRMED);
         order.setTotalAmount(totalPrice);
         List<OrderItem> orderItems = cartItems.stream()
@@ -65,9 +69,12 @@ public class OrderService {
         //Save order
         Order savedOrder = orderRepository.save(order);
 
-        //clear the cart
+        //clear the cartnotification
         cartService.clearCart(userId);
 
+        rabbitTemplate.convertAndSend("order.exchange",
+                "order.tracking",
+                Map.of("oderId",savedOrder.getId(),"status","CREATED"));
 
         return Optional.ofNullable(modelMapper.map(savedOrder, OrderResponse.class));
     }

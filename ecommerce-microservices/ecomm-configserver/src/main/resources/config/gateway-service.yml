@@ -1,5 +1,5 @@
 server:
-  port: 8089
+  port: 8091
 spring:
   cloud:
     config:
@@ -51,6 +51,26 @@ management:
     web:
       exposure:
         include: "*"
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
   tracing:
     sampling:
       probability:  1.0
+
+#circuitbreaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      ecommCircuitBreaker:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberofCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        slidingWindowType: count_based
