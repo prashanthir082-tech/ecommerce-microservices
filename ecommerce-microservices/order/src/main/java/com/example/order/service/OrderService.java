@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
 
 
@@ -27,6 +28,7 @@ public class OrderService {
     private final CartService cartService;
     private final OrderRepository orderRepository;
     private final RabbitTemplate rabbitTemplate;
+    private final StreamBridge streamBridge;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -72,9 +74,11 @@ public class OrderService {
         //clear the cartnotification
         cartService.clearCart(userId);
 
-        rabbitTemplate.convertAndSend("order.exchange",
-                "order.tracking",
-                Map.of("oderId",savedOrder.getId(),"status","CREATED"));
+//        rabbitTemplate.convertAndSend("order.exchange",
+//                "order.tracking",
+//                Map.of("oderId",savedOrder.getId(),"status","CREATED"));
+        String emptyJson = "{}";
+        streamBridge.send("createOrder-out-0",emptyJson);
 
         return Optional.ofNullable(modelMapper.map(savedOrder, OrderResponse.class));
     }
